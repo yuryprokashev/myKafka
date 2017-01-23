@@ -1,0 +1,11 @@
+{
+  "name": "my-kafka",
+  "version": "0.0.1",
+  "description": "kafkaService and kafkaBus for all my microservices",
+  "main": "myKafka.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Yury Prokashev",
+  "license": "ISC"
+}
