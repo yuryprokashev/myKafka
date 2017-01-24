@@ -2,10 +2,20 @@
   "name": "my-kafka",
   "version": "0.0.1",
   "description": "kafkaService and kafkaBus for all my microservices",
-  "main": "myKafka.js",
+  "main": "./compiled/myKafka.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Yury Prokashev",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-core": "^6.22.1",
+    "babel-preset-env": "^1.1.8",
+    "babel-preset-es2015": "^6.22.0",
+    "babel-watch": "^2.0.5"
+  },
+  "dependencies": {
+    "kafka-node": "^1.3.1"
+  }
 }
