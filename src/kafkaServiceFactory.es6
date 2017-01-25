@@ -21,6 +21,7 @@ module.exports = (kafkaBus) =>{
             if(data){
                 console.log('producer sent success');
                 console.log(data);
+                console.log(message);
                 console.log('-------------------');
             }
         };
