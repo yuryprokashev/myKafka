@@ -61,6 +61,7 @@ module.exports = (kafkaBus) =>{
     kafkaService.extractContext = kafkaMessage => {
         let context;
         context = JSON.parse(kafkaMessage.value);
+        console.log(kafkaMessage);
         if(context === undefined) {
             let newContext = {};
             newContext.response = {error: 'arrived context is empty'};
