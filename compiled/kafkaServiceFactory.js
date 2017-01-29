@@ -3,11 +3,15 @@
  */
 "use strict";
 
+var guid = require('./guid');
 module.exports = function (kafkaBus) {
 
     var kafkaService = {};
 
+    kafkaService.awaitReplyCache = new Map();
+
     kafkaService.send = function (topic, message) {
+
         var onProducerError = function onProducerError(err) {
             console.log('producer error');
             console.log(err);
@@ -30,7 +34,64 @@ module.exports = function (kafkaBus) {
         kafkaBus.producer.send([{ topic: topic, messages: JSON.stringify(message) }], onProducerSent);
     };
 
-    kafkaService.subscribe = function (topic, callback) {
+    kafkaService.send2 = function (topic, message) {
+        message.id = guid();
+        kafkaService.awaitReplyCache.set(message.id, message); // consider, kafkaService always wants reply for each message it sends
+
+        var onProducerError = function onProducerError(err) {
+            console.log('producer error');
+            console.log(err);
+            console.log('--------------');
+        };
+        var onProducerSent = function onProducerSent(err, data) {
+            if (err) {
+                console.log('producer sent error');
+                console.log(err);
+                console.log('-------------------');
+            }
+            if (data) {
+                console.log('producer sent success');
+                console.log(data);
+                // console.log(`message sent ${JSON.stringify(message)}`);
+                console.log('-------------------');
+            }
+        };
+        kafkaBus.producer.on('error', onProducerError);
+        kafkaBus.producer.send([{ topic: topic, messages: JSON.stringify(message) }], onProducerSent);
+    };
+
+    // kafkaService.subscribe = (topic, callback) => {
+    //     let onTopicsAdded = (err, added) => {
+    //         if(err){
+    //             console.log('consumer failed to add topics');
+    //             console.log(err);
+    //             console.log('-------------');
+    //         }
+    //     };
+    //     let onConsumerMessage = (message) => {
+    //         if(message.topic === topic){
+    //             callback(message);
+    //         }
+    //     };
+    //     let onConsumerError = (err) => {
+    //         console.log('consumer default error');
+    //         console.log(err);
+    //         console.log('-------------');
+    //     };
+    //     let topics = (function(qty){
+    //         let t = [];
+    //         for(let i = 0; i < qty; i++){
+    //             t.push({topic: topic, partition: i});
+    //         }
+    //         return t;
+    //     })(1);
+    //     kafkaBus.consumer.addTopics(topics, onTopicsAdded);
+    //     kafkaBus.consumer.on('message', onConsumerMessage);
+    //     kafkaBus.consumer.on('error', onConsumerError);
+    // };
+
+    kafkaService.subscribe2 = function (topic, isAsync, callback) {
+
         var onTopicsAdded = function onTopicsAdded(err, added) {
             if (err) {
                 console.log('consumer failed to add topics');
@@ -39,8 +100,16 @@ module.exports = function (kafkaBus) {
             }
         };
         var onConsumerMessage = function onConsumerMessage(message) {
-            if (message.topic === topic) {
-                callback(message);
+            if (isAsync === false) {
+                var messageId = kafkaService.extractId(message);
+                if (message.topic === topic && kafkaService.awaitReplyCache.has(messageId)) {
+                    callback(message);
+                    kafkaService.awaitReplyCache.delete(messageId);
+                }
+            } else {
+                if (message.topic === topic) {
+                    callback(message);
+                }
             }
         };
         var onConsumerError = function onConsumerError(err) {
@@ -58,6 +127,14 @@ module.exports = function (kafkaBus) {
         kafkaBus.consumer.addTopics(topics, onTopicsAdded);
         kafkaBus.consumer.on('message', onConsumerMessage);
         kafkaBus.consumer.on('error', onConsumerError);
+    };
+
+    kafkaService.extractId = function (kafkaMessage) {
+        var context = void 0,
+            id = void 0;
+        context = kafkaService.extractContext(kafkaMessage);
+        id = context.id;
+        return id;
     };
 
     kafkaService.extractContext = function (kafkaMessage) {
