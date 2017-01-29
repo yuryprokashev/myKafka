@@ -10,31 +10,31 @@ module.exports = function (kafkaBus) {
 
     kafkaService.awaitReplyCache = new Map();
 
+    // kafkaService.send = (topic, message)=>{
+    //
+    //     let onProducerError = (err) => {
+    //         console.log('producer error');
+    //         console.log(err);
+    //         console.log('--------------');
+    //     };
+    //     let onProducerSent = (err, data) => {
+    //         if(err){
+    //             console.log('producer sent error');
+    //             console.log(err);
+    //             console.log('-------------------');
+    //         }
+    //         if(data){
+    //             console.log('producer sent success');
+    //             console.log(data);
+    //             // console.log(`message sent ${JSON.stringify(message)}`);
+    //             console.log('-------------------');
+    //         }
+    //     };
+    //     kafkaBus.producer.on('error', onProducerError);
+    //     kafkaBus.producer.send([{topic: topic, messages: JSON.stringify(message)}], onProducerSent);
+    // };
+
     kafkaService.send = function (topic, message) {
-
-        var onProducerError = function onProducerError(err) {
-            console.log('producer error');
-            console.log(err);
-            console.log('--------------');
-        };
-        var onProducerSent = function onProducerSent(err, data) {
-            if (err) {
-                console.log('producer sent error');
-                console.log(err);
-                console.log('-------------------');
-            }
-            if (data) {
-                console.log('producer sent success');
-                console.log(data);
-                // console.log(`message sent ${JSON.stringify(message)}`);
-                console.log('-------------------');
-            }
-        };
-        kafkaBus.producer.on('error', onProducerError);
-        kafkaBus.producer.send([{ topic: topic, messages: JSON.stringify(message) }], onProducerSent);
-    };
-
-    kafkaService.send2 = function (topic, message) {
         message.id = guid();
         kafkaService.awaitReplyCache.set(message.id, message); // consider, kafkaService always wants reply for each message it sends
 
@@ -90,7 +90,7 @@ module.exports = function (kafkaBus) {
     //     kafkaBus.consumer.on('error', onConsumerError);
     // };
 
-    kafkaService.subscribe2 = function (topic, isAsync, callback) {
+    kafkaService.subscribe = function (topic, isAsync, callback) {
 
         var onTopicsAdded = function onTopicsAdded(err, added) {
             if (err) {
