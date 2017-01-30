@@ -34,11 +34,12 @@ module.exports = function (kafkaBus) {
     //     kafkaBus.producer.send([{topic: topic, messages: JSON.stringify(message)}], onProducerSent);
     // };
 
-    kafkaService.send = function (topic, message) {
-        message.id = guid();
+    kafkaService.send = function (topic, signRequest, message) {
+        if (signRequest === true) {
+            message.id = guid();
+            kafkaService.awaitReplyCache.set(message.id, message); // consider, kafkaService always wants reply for each message it sends
+        }
         console.log(message.id);
-        kafkaService.awaitReplyCache.set(message.id, message); // consider, kafkaService always wants reply for each message it sends
-
         var onProducerError = function onProducerError(err) {
             console.log('producer error');
             console.log(err);
@@ -91,7 +92,7 @@ module.exports = function (kafkaBus) {
     //     kafkaBus.consumer.on('error', onConsumerError);
     // };
 
-    kafkaService.subscribe = function (topic, signRequest, callback) {
+    kafkaService.subscribe = function (topic, isSignedRequest, callback) {
 
         var onTopicsAdded = function onTopicsAdded(err, added) {
             if (err) {
@@ -101,7 +102,7 @@ module.exports = function (kafkaBus) {
             }
         };
         var onConsumerMessage = function onConsumerMessage(message) {
-            if (signRequest === true) {
+            if (isSignedRequest === true) {
                 console.log('signRequest = true');
                 var messageId = kafkaService.extractId(message);
                 console.log('message.id = ' + messageId);

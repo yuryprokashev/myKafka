@@ -34,11 +34,12 @@ module.exports = (kafkaBus) =>{
     //     kafkaBus.producer.send([{topic: topic, messages: JSON.stringify(message)}], onProducerSent);
     // };
 
-    kafkaService.send = (topic, message)=>{
-        message.id = guid();
+    kafkaService.send = (topic, signRequest, message)=>{
+        if(signRequest === true) {
+            message.id = guid();
+            kafkaService.awaitReplyCache.set(message.id, message); // consider, kafkaService always wants reply for each message it sends
+        }
         console.log(message.id);
-        kafkaService.awaitReplyCache.set(message.id, message); // consider, kafkaService always wants reply for each message it sends
-
         let onProducerError = (err) => {
             console.log('producer error');
             console.log(err);
@@ -93,7 +94,7 @@ module.exports = (kafkaBus) =>{
     //     kafkaBus.consumer.on('error', onConsumerError);
     // };
 
-    kafkaService.subscribe = (topic, signRequest, callback) => {
+    kafkaService.subscribe = (topic, isSignedRequest, callback) => {
 
         let onTopicsAdded = (err, added) => {
             if(err){
@@ -103,8 +104,8 @@ module.exports = (kafkaBus) =>{
             }
         };
         let onConsumerMessage = (message) => {
-            if(signRequest === true) {
-                console.log('signRequest = true');
+            if(isSignedRequest === true) {
+                console.log('isSignedRequest = true');
                 let messageId = kafkaService.extractId(message);
                 console.log(`message.id = ${messageId}`);
                 if(message.topic === topic && kafkaService.awaitReplyCache.has(messageId)){
@@ -114,7 +115,7 @@ module.exports = (kafkaBus) =>{
                 }
             }
             else {
-                console.log('signRequest = false');
+                console.log('isSignedRequest = false');
                 if(message.topic === topic) {
                     console.log('now executing callback');
                     callback(message);
