@@ -92,7 +92,7 @@ module.exports = (kafkaBus) =>{
     //     kafkaBus.consumer.on('error', onConsumerError);
     // };
 
-    kafkaService.subscribe = (topic, isAsync, callback) => {
+    kafkaService.subscribe = (topic, signRequest, callback) => {
 
         let onTopicsAdded = (err, added) => {
             if(err){
@@ -102,8 +102,8 @@ module.exports = (kafkaBus) =>{
             }
         };
         let onConsumerMessage = (message) => {
-            if(isAsync === false) {
-                console.log('isAsync false');
+            if(signRequest === true) {
+                console.log('signRequest = true');
                 let messageId = kafkaService.extractId(message);
                 console.log(`message.id = ${messageId}`);
                 if(message.topic === topic && kafkaService.awaitReplyCache.has(messageId)){
@@ -113,7 +113,7 @@ module.exports = (kafkaBus) =>{
                 }
             }
             else {
-                console.log('isAsync true');
+                console.log('signRequest = false');
                 if(message.topic === topic) {
                     console.log('now executing callback');
                     callback(message);

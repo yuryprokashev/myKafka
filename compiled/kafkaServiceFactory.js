@@ -90,7 +90,7 @@ module.exports = function (kafkaBus) {
     //     kafkaBus.consumer.on('error', onConsumerError);
     // };
 
-    kafkaService.subscribe = function (topic, isAsync, callback) {
+    kafkaService.subscribe = function (topic, signRequest, callback) {
 
         var onTopicsAdded = function onTopicsAdded(err, added) {
             if (err) {
@@ -100,8 +100,8 @@ module.exports = function (kafkaBus) {
             }
         };
         var onConsumerMessage = function onConsumerMessage(message) {
-            if (isAsync === false) {
-                console.log('isAsync false');
+            if (signRequest === true) {
+                console.log('signRequest = true');
                 var messageId = kafkaService.extractId(message);
                 console.log('message.id = ' + messageId);
                 if (message.topic === topic && kafkaService.awaitReplyCache.has(messageId)) {
@@ -110,7 +110,7 @@ module.exports = function (kafkaBus) {
                     kafkaService.awaitReplyCache.delete(messageId);
                 }
             } else {
-                console.log('isAsync true');
+                console.log('signRequest = false');
                 if (message.topic === topic) {
                     console.log('now executing callback');
                     callback(message);
