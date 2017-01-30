@@ -36,7 +36,7 @@ module.exports = function (kafkaBus) {
 
     kafkaService.send = function (topic, message) {
         message.id = guid();
-
+        console.log(message.id);
         kafkaService.awaitReplyCache.set(message.id, message); // consider, kafkaService always wants reply for each message it sends
 
         var onProducerError = function onProducerError(err) {
