@@ -101,13 +101,18 @@ module.exports = function (kafkaBus) {
         };
         var onConsumerMessage = function onConsumerMessage(message) {
             if (isAsync === false) {
+                console.log('isAsync false');
                 var messageId = kafkaService.extractId(message);
+                console.log('message.id = ' + messageId);
                 if (message.topic === topic && kafkaService.awaitReplyCache.has(messageId)) {
+                    console.log('now executing callback');
                     callback(message);
                     kafkaService.awaitReplyCache.delete(messageId);
                 }
             } else {
+                console.log('isAsync true');
                 if (message.topic === topic) {
+                    console.log('now executing callback');
                     callback(message);
                 }
             }
