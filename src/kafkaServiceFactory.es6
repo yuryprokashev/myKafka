@@ -10,30 +10,6 @@ module.exports = (kafkaBus) =>{
 
     kafkaService.awaitReplyCache = new Map();
 
-    // kafkaService.send = (topic, message)=>{
-    //
-    //     let onProducerError = (err) => {
-    //         console.log('producer error');
-    //         console.log(err);
-    //         console.log('--------------');
-    //     };
-    //     let onProducerSent = (err, data) => {
-    //         if(err){
-    //             console.log('producer sent error');
-    //             console.log(err);
-    //             console.log('-------------------');
-    //         }
-    //         if(data){
-    //             console.log('producer sent success');
-    //             console.log(data);
-    //             // console.log(`message sent ${JSON.stringify(message)}`);
-    //             console.log('-------------------');
-    //         }
-    //     };
-    //     kafkaBus.producer.on('error', onProducerError);
-    //     kafkaBus.producer.send([{topic: topic, messages: JSON.stringify(message)}], onProducerSent);
-    // };
-
     kafkaService.send = (topic, signRequest, message)=>{
         if(signRequest === true) {
             message.id = guid();
@@ -61,38 +37,6 @@ module.exports = (kafkaBus) =>{
         kafkaBus.producer.on('error', onProducerError);
         kafkaBus.producer.send([{topic: topic, messages: JSON.stringify(message)}], onProducerSent);
     };
-
-
-
-    // kafkaService.subscribe = (topic, callback) => {
-    //     let onTopicsAdded = (err, added) => {
-    //         if(err){
-    //             console.log('consumer failed to add topics');
-    //             console.log(err);
-    //             console.log('-------------');
-    //         }
-    //     };
-    //     let onConsumerMessage = (message) => {
-    //         if(message.topic === topic){
-    //             callback(message);
-    //         }
-    //     };
-    //     let onConsumerError = (err) => {
-    //         console.log('consumer default error');
-    //         console.log(err);
-    //         console.log('-------------');
-    //     };
-    //     let topics = (function(qty){
-    //         let t = [];
-    //         for(let i = 0; i < qty; i++){
-    //             t.push({topic: topic, partition: i});
-    //         }
-    //         return t;
-    //     })(1);
-    //     kafkaBus.consumer.addTopics(topics, onTopicsAdded);
-    //     kafkaBus.consumer.on('message', onConsumerMessage);
-    //     kafkaBus.consumer.on('error', onConsumerError);
-    // };
 
     kafkaService.subscribe = (topic, isSignedRequest, callback) => {
 
