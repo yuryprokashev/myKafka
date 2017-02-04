@@ -53,7 +53,7 @@ module.exports = (kafkaBus) =>{
                 let messageId = kafkaService.extractId(message);
                 console.log(`message.id = ${messageId}`);
                 if(message.topic === topic && kafkaService.awaitReplyCache.has(messageId)){
-                    console.log('now executing callback');
+                    console.log(`now executing callback ${callback.name}`);
                     callback(message);
                     kafkaService.awaitReplyCache.delete(messageId);
                 }
