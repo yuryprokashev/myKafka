@@ -49,16 +49,15 @@ module.exports = function (kafkaBus) {
         };
         var onConsumerMessage = function onConsumerMessage(message) {
             if (isSignedRequest === true) {
-                console.log('isSignedRequest = true');
+                console.log('topic ' + topic + ' isSignedRequest = true');
                 var messageId = kafkaService.extractId(message);
-                console.log('message.id = ' + messageId);
                 if (message.topic === topic && kafkaService.awaitReplyCache.has(messageId)) {
-                    console.log('message.id match for ' + topic + ' -> now executing callback ' + callback.name);
+                    console.log('message.id ' + messageId + ' match for ' + topic + ' -> now executing callback ' + callback.name);
                     callback(message);
                     kafkaService.awaitReplyCache.delete(messageId);
                 }
             } else {
-                console.log('isSignedRequest = false');
+                console.log('topic ' + topic + ' isSignedRequest = false');
                 if (message.topic === topic) {
                     console.log('topic match ' + topic + ' -> now executing callback');
                     callback(message);
