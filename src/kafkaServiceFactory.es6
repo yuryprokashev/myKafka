@@ -30,7 +30,7 @@ module.exports = (kafkaBus) =>{
             if(data){
                 console.log('producer sent success');
                 console.log(data);
-                // console.log(`message sent ${JSON.stringify(message)}`);
+                console.log(`message sent ${JSON.stringify(message)}`);
                 console.log('-------------------');
             }
         };
@@ -48,13 +48,13 @@ module.exports = (kafkaBus) =>{
             }
         };
         let onConsumerMessage = (message) => {
-            console.log('consumer received message');
-            console.log(message);
             if(isSignedRequest === true) {
                 console.log(`topic ${topic} isSignedRequest = true`);
                 let messageId = kafkaService.extractId(message);
                 if(message.topic === topic && kafkaService.awaitReplyCache.has(messageId)){
                     console.log(`message.id ${messageId} match for ${topic} -> now executing callback ${callback.name}`);
+                    console.log('consumer received message');
+                    console.log(message);
                     callback(message);
                     kafkaService.awaitReplyCache.delete(messageId);
                 }
@@ -62,7 +62,9 @@ module.exports = (kafkaBus) =>{
             else {
                 console.log(`topic ${topic} isSignedRequest = false`);
                 if(message.topic === topic) {
+                    console.log('consumer received message');
                     console.log(`topic match ${topic} -> now executing callback`);
+                    console.log(message);
                     callback(message);
                 }
             }
