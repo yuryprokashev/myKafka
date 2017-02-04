@@ -53,14 +53,14 @@ module.exports = function (kafkaBus) {
                 var messageId = kafkaService.extractId(message);
                 console.log('message.id = ' + messageId);
                 if (message.topic === topic && kafkaService.awaitReplyCache.has(messageId)) {
-                    console.log('now executing callback ' + callback.name);
+                    console.log('message.id match for ' + topic + ' -> now executing callback ' + callback.name);
                     callback(message);
                     kafkaService.awaitReplyCache.delete(messageId);
                 }
             } else {
                 console.log('isSignedRequest = false');
                 if (message.topic === topic) {
-                    console.log('now executing callback');
+                    console.log('topic match ' + topic + ' -> now executing callback');
                     callback(message);
                 }
             }
