@@ -48,6 +48,8 @@ module.exports = function (kafkaBus) {
             }
         };
         var onConsumerMessage = function onConsumerMessage(message) {
+            console.log('consumer received message');
+            console.log(message);
             if (isSignedRequest === true) {
                 console.log('topic ' + topic + ' isSignedRequest = true');
                 var messageId = kafkaService.extractId(message);
