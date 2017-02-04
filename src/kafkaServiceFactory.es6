@@ -90,8 +90,14 @@ module.exports = (kafkaBus) =>{
         let context, id;
 
         context = kafkaService.extractContext(kafkaMessage);
-        id = context.id;
-        return id;
+        if(context !== null) {
+            id = context.id;
+            return id;
+        }
+        else {
+            return null;
+        }
+
     };
 
     kafkaService.extractContext = kafkaMessage => {
@@ -99,12 +105,13 @@ module.exports = (kafkaBus) =>{
 
         context = JSON.parse(kafkaMessage.value);
 
-        topic = kafkaService.makeResponseTopic(kafkaMessage);
+        // topic = kafkaService.makeResponseTopic(kafkaMessage);
 
         if(context === undefined || context === null) {
-            let newContext = {};
-            newContext.response = {error: 'arrived context is empty'};
-            kafkaService.send(topic, false, newContext);
+            // let newContext = {};
+            // newContext.response = {error: 'arrived context is empty'};
+            // kafkaService.send(topic, false, newContext);
+            return null;
         }
         return context;
     };
@@ -113,12 +120,13 @@ module.exports = (kafkaBus) =>{
         let query, topic;
 
         query = JSON.parse(kafkaMessage.value).request.query;
-        topic = kafkaService.makeResponseTopic(kafkaMessage);
+        // topic = kafkaService.makeResponseTopic(kafkaMessage);
         if(query === undefined || query === null) {
-            let context;
-            context = kafkaService.extractContext(kafkaMessage);
-            context.response = {error: 'query is empty'};
-            kafkaService.send(topic, false, context);
+            // let context;
+            // context = kafkaService.extractContext(kafkaMessage);
+            // context.response = {error: 'query is empty'};
+            // kafkaService.send(topic, false, context);
+            return null;
         }
         else {
             return query;
@@ -126,18 +134,19 @@ module.exports = (kafkaBus) =>{
     };
 
     kafkaService.extractWriteData = kafkaMessage => {
-        let profile, topic;
+        let writeData, topic;
 
-        profile = JSON.parse(kafkaMessage.value).request.writeData;
-        topic = kafkaService.makeResponseTopic(kafkaMessage);
-        if(profile === undefined || profile === null) {
-            let context;
-            context = kafkaService.extractContext(kafkaMessage);
-            context.response = {error: 'profile is empty'};
-            kafkaService.send(topic, false, context);
+        writeData = JSON.parse(kafkaMessage.value).request.writeData;
+        // topic = kafkaService.makeResponseTopic(kafkaMessage);
+        if(writeData === undefined || writeData === null) {
+            // let context;
+            // context = kafkaService.extractContext(kafkaMessage);
+            // context.response = {error: 'writeData is empty'};
+            // kafkaService.send(topic, false, context);
+            return null;
         }
         else {
-            return profile;
+            return writeData;
         }
     };
 
