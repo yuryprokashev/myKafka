@@ -84,42 +84,55 @@ module.exports = function (kafkaBus) {
     kafkaService.extractId = function (kafkaMessage) {
         var context = void 0,
             id = void 0;
+
         context = kafkaService.extractContext(kafkaMessage);
         id = context.id;
         return id;
     };
 
     kafkaService.extractContext = function (kafkaMessage) {
-        var context = void 0;
+        var context = void 0,
+            topic = void 0;
+
         context = JSON.parse(kafkaMessage.value);
-        // console.log(kafkaMessage);
+
+        topic = kafkaService.makeResponseTopic(kafkaMessage);
+
         if (context === undefined || context === null) {
             var newContext = {};
             newContext.response = { error: 'arrived context is empty' };
-            kafkaService.send(kafkaService.makeResponseTopic(kafkaMessage), newContext);
+            kafkaService.send(topic, false, newContext);
         }
         return context;
     };
 
     kafkaService.extractQuery = function (kafkaMessage) {
-        var query = JSON.parse(kafkaMessage.value).request.query;
+        var query = void 0,
+            topic = void 0;
+
+        query = JSON.parse(kafkaMessage.value).request.query;
+        topic = kafkaService.makeResponseTopic(kafkaMessage);
         if (query === undefined || query === null) {
             var context = void 0;
             context = kafkaService.extractContext(kafkaMessage);
             context.response = { error: 'query is empty' };
-            kafkaService.send(kafkaService.makeResponseTopic(kafkaMessage), context);
+            kafkaService.send(topic, false, context);
         } else {
             return query;
         }
     };
 
     kafkaService.extractWriteData = function (kafkaMessage) {
-        var profile = JSON.parse(kafkaMessage.value).request.writeData;
+        var profile = void 0,
+            topic = void 0;
+
+        profile = JSON.parse(kafkaMessage.value).request.writeData;
+        topic = kafkaService.makeResponseTopic(kafkaMessage);
         if (profile === undefined || profile === null) {
             var context = void 0;
             context = kafkaService.extractContext(kafkaMessage);
             context.response = { error: 'profile is empty' };
-            kafkaService.send(kafkaService.makeResponseTopic(kafkaMessage), context);
+            kafkaService.send(topic, false, context);
         } else {
             return profile;
         }
