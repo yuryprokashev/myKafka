@@ -30,7 +30,7 @@ module.exports = function (kafkaBus) {
             if (data) {
                 console.log('producer sent success');
                 console.log(data);
-                console.log('message sent ' + JSON.stringify(message));
+                console.log('message sent ' + JSON.stringify(message.response));
                 console.log('-------------------');
             }
         };
