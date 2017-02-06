@@ -8,12 +8,16 @@ module.exports = (kafkaBus) =>{
 
     let kafkaService = {};
 
-    kafkaService.awaitReplyCache = new Map();
+    kafkaService.send = (topic, signature, message) => {
+        let args = [...arguments];
 
-    kafkaService.send = (topic, signRequest, message)=>{
-        if(signRequest === true) {
-            message.id = guid();
-            kafkaService.awaitReplyCache.set(message.id, message); // consider, kafkaService always wants reply for each message it sends
+        if(args.length === 2) {
+            message = signature;
+            signature = undefined;
+        }
+
+        if(signature !== undefined) {
+            message.id = signature;
         }
         // console.log(message.id);
         let onProducerError = (err) => {
@@ -39,7 +43,14 @@ module.exports = (kafkaBus) =>{
         kafkaBus.producer.send([{topic: topic, messages: JSON.stringify(message)}], onProducerSent);
     };
 
-    kafkaService.subscribe = (topic, isSignedRequest, callback) => {
+    kafkaService.subscribe = (topic, signature, callback) => {
+
+        let args = [...arguments];
+
+        if(args.length === 2) {
+            callback = signature;
+            signature = undefined;
+        }
 
         let onTopicsAdded = (err, added) => {
             if(err){
@@ -48,28 +59,29 @@ module.exports = (kafkaBus) =>{
                 console.log('-------------');
             }
         };
-        let onConsumerMessage = (message) => {
-            if(isSignedRequest === true) {
-                console.log(`topic ${topic} isSignedRequest = true`);
-                let messageId = kafkaService.extractId(message);
-                if(message.topic === topic && kafkaService.awaitReplyCache.has(messageId)){
-                    console.log('consumer received message.response');
-                    console.log(`message.id ${messageId} match for ${topic} -> now executing callback ${callback.name}`);
-                    console.log(message.response);
-                    callback(message);
-                    kafkaService.awaitReplyCache.delete(messageId);
+
+        let onConsumerMessage = message => {
+            let messageSignature;
+            messageSignature = kafkaService.extractId(message);
+
+            if(messageSignature.error === undefined) {
+                if(message.topic === topic) {
+                    if(signature !== undefined && signature === messageSignature) {
+                        callback(message);
+                    }
+                    else if(signature === undefined) {
+                        callback(message);
+                    }
+                    else {
+                        console.error('message arrived, but no callback executed');
+                    }
                 }
             }
             else {
-                console.log(`topic ${topic} isSignedRequest = false`);
-                if(message.topic === topic) {
-                    console.log('consumer received message.response');
-                    console.log(`topic match ${topic} -> now executing callback`);
-                    console.log(message.response);
-                    callback(message);
-                }
+                console.log(messageSignature);
             }
         };
+
         let onConsumerError = (err) => {
             console.log('consumer default error');
             console.log(err);
@@ -91,43 +103,33 @@ module.exports = (kafkaBus) =>{
         let context, id;
 
         context = kafkaService.extractContext(kafkaMessage);
-        if(context !== null) {
+        if(context.error === undefined) {
             id = context.id;
             return id;
         }
         else {
-            return null;
+            return {error: 'unable to extract id, kafkaMessage has no context'};
         }
 
     };
 
     kafkaService.extractContext = kafkaMessage => {
-        let context, topic;
+        let context;
 
         context = JSON.parse(kafkaMessage.value);
 
-        // topic = kafkaService.makeResponseTopic(kafkaMessage);
-
         if(context === undefined || context === null) {
-            // let newContext = {};
-            // newContext.response = {error: 'arrived context is empty'};
-            // kafkaService.send(topic, false, newContext);
-            return null;
+            return {error: 'kafkaMessage has no value'};
         }
         return context;
     };
 
     kafkaService.extractQuery = kafkaMessage => {
-        let query, topic;
+        let query;
 
         query = JSON.parse(kafkaMessage.value).request.query;
-        // topic = kafkaService.makeResponseTopic(kafkaMessage);
         if(query === undefined || query === null) {
-            // let context;
-            // context = kafkaService.extractContext(kafkaMessage);
-            // context.response = {error: 'query is empty'};
-            // kafkaService.send(topic, false, context);
-            return null;
+            return {error: 'kafkaMessage has no query'};
         }
         else {
             return query;
@@ -135,16 +137,11 @@ module.exports = (kafkaBus) =>{
     };
 
     kafkaService.extractWriteData = kafkaMessage => {
-        let writeData, topic;
+        let writeData;
 
         writeData = JSON.parse(kafkaMessage.value).request.writeData;
-        // topic = kafkaService.makeResponseTopic(kafkaMessage);
         if(writeData === undefined || writeData === null) {
-            // let context;
-            // context = kafkaService.extractContext(kafkaMessage);
-            // context.response = {error: 'writeData is empty'};
-            // kafkaService.send(topic, false, context);
-            return null;
+            return {error: 'kafkaMessage has no writeData'};
         }
         else {
             return writeData;

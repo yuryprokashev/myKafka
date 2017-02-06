@@ -3,17 +3,22 @@
  */
 "use strict";
 
+var _arguments = arguments;
 var guid = require('./guid');
 module.exports = function (kafkaBus) {
 
     var kafkaService = {};
 
-    kafkaService.awaitReplyCache = new Map();
+    kafkaService.send = function (topic, signature, message) {
+        var args = [].concat(Array.prototype.slice.call(_arguments));
 
-    kafkaService.send = function (topic, signRequest, message) {
-        if (signRequest === true) {
-            message.id = guid();
-            kafkaService.awaitReplyCache.set(message.id, message); // consider, kafkaService always wants reply for each message it sends
+        if (args.length === 2) {
+            message = signature;
+            signature = undefined;
+        }
+
+        if (signature !== undefined) {
+            message.id = signature;
         }
         // console.log(message.id);
         var onProducerError = function onProducerError(err) {
@@ -39,7 +44,14 @@ module.exports = function (kafkaBus) {
         kafkaBus.producer.send([{ topic: topic, messages: JSON.stringify(message) }], onProducerSent);
     };
 
-    kafkaService.subscribe = function (topic, isSignedRequest, callback) {
+    kafkaService.subscribe = function (topic, signature, callback) {
+
+        var args = [].concat(Array.prototype.slice.call(_arguments));
+
+        if (args.length === 2) {
+            callback = signature;
+            signature = undefined;
+        }
 
         var onTopicsAdded = function onTopicsAdded(err, added) {
             if (err) {
@@ -48,27 +60,26 @@ module.exports = function (kafkaBus) {
                 console.log('-------------');
             }
         };
+
         var onConsumerMessage = function onConsumerMessage(message) {
-            if (isSignedRequest === true) {
-                console.log('topic ' + topic + ' isSignedRequest = true');
-                var messageId = kafkaService.extractId(message);
-                if (message.topic === topic && kafkaService.awaitReplyCache.has(messageId)) {
-                    console.log('consumer received message.response');
-                    console.log('message.id ' + messageId + ' match for ' + topic + ' -> now executing callback ' + callback.name);
-                    console.log(message.response);
-                    callback(message);
-                    kafkaService.awaitReplyCache.delete(messageId);
+            var messageSignature = void 0;
+            messageSignature = kafkaService.extractId(message);
+
+            if (messageSignature.error === undefined) {
+                if (message.topic === topic) {
+                    if (signature !== undefined && signature === messageSignature) {
+                        callback(message);
+                    } else if (signature === undefined) {
+                        callback(message);
+                    } else {
+                        console.error('message arrived, but no callback executed');
+                    }
                 }
             } else {
-                console.log('topic ' + topic + ' isSignedRequest = false');
-                if (message.topic === topic) {
-                    console.log('consumer received message.response');
-                    console.log('topic match ' + topic + ' -> now executing callback');
-                    console.log(message.response);
-                    callback(message);
-                }
+                console.log(messageSignature);
             }
         };
+
         var onConsumerError = function onConsumerError(err) {
             console.log('consumer default error');
             console.log(err);
@@ -91,60 +102,42 @@ module.exports = function (kafkaBus) {
             id = void 0;
 
         context = kafkaService.extractContext(kafkaMessage);
-        if (context !== null) {
+        if (context.error === undefined) {
             id = context.id;
             return id;
         } else {
-            return null;
+            return { error: 'unable to extract id, kafkaMessage has no context' };
         }
     };
 
     kafkaService.extractContext = function (kafkaMessage) {
-        var context = void 0,
-            topic = void 0;
+        var context = void 0;
 
         context = JSON.parse(kafkaMessage.value);
 
-        // topic = kafkaService.makeResponseTopic(kafkaMessage);
-
         if (context === undefined || context === null) {
-            // let newContext = {};
-            // newContext.response = {error: 'arrived context is empty'};
-            // kafkaService.send(topic, false, newContext);
-            return null;
+            return { error: 'kafkaMessage has no value' };
         }
         return context;
     };
 
     kafkaService.extractQuery = function (kafkaMessage) {
-        var query = void 0,
-            topic = void 0;
+        var query = void 0;
 
         query = JSON.parse(kafkaMessage.value).request.query;
-        // topic = kafkaService.makeResponseTopic(kafkaMessage);
         if (query === undefined || query === null) {
-            // let context;
-            // context = kafkaService.extractContext(kafkaMessage);
-            // context.response = {error: 'query is empty'};
-            // kafkaService.send(topic, false, context);
-            return null;
+            return { error: 'kafkaMessage has no query' };
         } else {
             return query;
         }
     };
 
     kafkaService.extractWriteData = function (kafkaMessage) {
-        var writeData = void 0,
-            topic = void 0;
+        var writeData = void 0;
 
         writeData = JSON.parse(kafkaMessage.value).request.writeData;
-        // topic = kafkaService.makeResponseTopic(kafkaMessage);
         if (writeData === undefined || writeData === null) {
-            // let context;
-            // context = kafkaService.extractContext(kafkaMessage);
-            // context.response = {error: 'writeData is empty'};
-            // kafkaService.send(topic, false, context);
-            return null;
+            return { error: 'kafkaMessage has no writeData' };
         } else {
             return writeData;
         }
