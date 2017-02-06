@@ -62,21 +62,24 @@ module.exports = function (kafkaBus) {
         };
 
         var onConsumerMessage = function onConsumerMessage(message) {
-            var messageSignature = void 0;
-            messageSignature = kafkaService.extractId(message);
-
-            if (messageSignature.error === undefined) {
+            if (signature === undefined) {
                 if (message.topic === topic) {
-                    if (signature !== undefined && signature === messageSignature) {
-                        callback(message);
-                    } else if (signature === undefined) {
-                        callback(message);
-                    } else {
-                        console.error('message arrived, but no callback executed');
-                    }
+                    callback(message);
+                }
+            } else if (signature !== undefined) {
+                var messageSignature = void 0;
+                messageSignature = kafkaService.extractId(message);
+                if (messageSignature.error !== undefined) {
+                    console.log(messageSignature.error);
+                }
+
+                if (message.topic === topic && signature === messageSignature) {
+                    callback(message);
+                } else {
+                    console.log('message arrived, it has another topic, it has no signature, no callback executed');
                 }
             } else {
-                console.log(messageSignature);
+                console.log('message has signature and has no signature');
             }
         };
 
