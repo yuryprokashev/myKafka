@@ -10,7 +10,6 @@ module.exports = (kafkaBus) =>{
     let signedRequests = new Map();
 
     kafkaService.send = (topic, signature, message) => {
-        console.log(typeof signature);
 
         if(typeof signature !== 'string') {
             message = signature;
@@ -77,7 +76,7 @@ module.exports = (kafkaBus) =>{
                 if(messageSignature.error !== undefined) {console.log(messageSignature.error)}
 
                 if(signedRequests.has(messageSignature) && message.topic === topic) {
-                    console.log(`signature = ${messageSignature}`);
+                    console.log(`arrived signature exists in cache and = ${messageSignature}`);
                     callback(message);
                     signedRequests.delete(messageSignature);
                 }

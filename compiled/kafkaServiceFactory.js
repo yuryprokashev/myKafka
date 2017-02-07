@@ -3,8 +3,6 @@
  */
 "use strict";
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
-
 var guid = require('./guid');
 module.exports = function (kafkaBus) {
 
@@ -12,7 +10,6 @@ module.exports = function (kafkaBus) {
     var signedRequests = new Map();
 
     kafkaService.send = function (topic, signature, message) {
-        console.log(typeof signature === 'undefined' ? 'undefined' : _typeof(signature));
 
         if (typeof signature !== 'string') {
             message = signature;
@@ -78,7 +75,7 @@ module.exports = function (kafkaBus) {
                 }
 
                 if (signedRequests.has(messageSignature) && message.topic === topic) {
-                    console.log('signature = ' + messageSignature);
+                    console.log('arrived signature exists in cache and = ' + messageSignature);
                     callback(message);
                     signedRequests.delete(messageSignature);
                 } else {
