@@ -5,7 +5,6 @@
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-var _arguments = arguments;
 var guid = require('./guid');
 module.exports = function (kafkaBus) {
 
@@ -13,9 +12,9 @@ module.exports = function (kafkaBus) {
     var signedRequests = new Map();
 
     kafkaService.send = function (topic, signature, message) {
-        var args = [].concat(Array.prototype.slice.call(_arguments));
+        console.log(typeof signature === 'undefined' ? 'undefined' : _typeof(signature));
 
-        if (args.length === 2) {
+        if (typeof signature === 'function') {
             message = signature;
             signature = undefined;
         }

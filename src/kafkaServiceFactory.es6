@@ -10,9 +10,9 @@ module.exports = (kafkaBus) =>{
     let signedRequests = new Map();
 
     kafkaService.send = (topic, signature, message) => {
-        let args = [...arguments];
+        console.log(typeof signature);
 
-        if(args.length === 2) {
+        if(typeof signature === 'function') {
             message = signature;
             signature = undefined;
         }
