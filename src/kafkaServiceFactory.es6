@@ -47,7 +47,7 @@ module.exports = (kafkaBus) =>{
 
     kafkaService.subscribe = (topic, signature, callback) => {
 
-        console.log(typeof signature);
+        // console.log(typeof signature);
 
         if(typeof signature === 'function') {
             callback = signature;
@@ -63,19 +63,23 @@ module.exports = (kafkaBus) =>{
         };
 
         let onConsumerMessage = message => {
-            console.log(`signature = ${signature}`);
+
             if(signature === undefined) {
                 if(message.topic === topic) {
                     callback(message);
                 }
             }
             else if(signature !== undefined) {
+
                 let messageSignature;
+
                 messageSignature = kafkaService.extractId(message);
                 if(messageSignature.error !== undefined) {console.log(messageSignature.error)}
 
-                if(signedRequests.has(signature)) {
+                if(signedRequests.has(messageSignature)) {
+                    console.log(`signature = ${messageSignature}`);
                     callback(message);
+                    signedRequests.delete(messageSignature);
                 }
                 else {
                     console.log('message arrived, it has unknown signature, no callback executed')
