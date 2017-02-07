@@ -81,6 +81,7 @@ module.exports = function (kafkaBus) {
                     console.log('arrived signature exists in cache and = ' + messageSignature);
                     signedCallbacks.get(messageSignature)(message);
                     signedRequests.delete(messageSignature);
+                    signedCallbacks.delete(messageSignature);
                 } else {
                     console.log('message arrived, it has unknown signature, no callback executed');
                 }
