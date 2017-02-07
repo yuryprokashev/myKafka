@@ -3,6 +3,8 @@
  */
 "use strict";
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 var _arguments = arguments;
 var guid = require('./guid');
 module.exports = function (kafkaBus) {
@@ -48,11 +50,9 @@ module.exports = function (kafkaBus) {
 
     kafkaService.subscribe = function (topic, signature, callback) {
 
-        var args = [].concat(Array.prototype.slice.call(_arguments));
-        console.log(_arguments);
-        console.log(args);
+        console.log(typeof signature === 'undefined' ? 'undefined' : _typeof(signature));
 
-        if (args.length === 2) {
+        if (typeof signature === 'function') {
             callback = signature;
             signature = undefined;
         }
