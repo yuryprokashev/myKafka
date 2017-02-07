@@ -77,7 +77,7 @@ module.exports = function (kafkaBus) {
                     console.log(messageSignature.error);
                 }
 
-                if (signedRequests.has(messageSignature)) {
+                if (signedRequests.has(messageSignature) && message.topic === topic) {
                     console.log('signature = ' + messageSignature);
                     callback(message);
                     signedRequests.delete(messageSignature);
