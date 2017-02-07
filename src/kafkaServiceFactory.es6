@@ -7,6 +7,7 @@ const guid = require('./guid');
 module.exports = (kafkaBus) =>{
 
     let kafkaService = {};
+    let signedRequests = new Map();
 
     kafkaService.send = (topic, signature, message) => {
         let args = [...arguments];
@@ -18,6 +19,7 @@ module.exports = (kafkaBus) =>{
 
         if(signature !== undefined) {
             message.id = signature;
+            signedRequests.set(signature, message);
         }
         // console.log(message.id);
         let onProducerError = (err) => {
@@ -61,6 +63,7 @@ module.exports = (kafkaBus) =>{
         };
 
         let onConsumerMessage = message => {
+            console.log(`signature = ${signature}`);
             if(signature === undefined) {
                 if(message.topic === topic) {
                     callback(message);
@@ -71,11 +74,11 @@ module.exports = (kafkaBus) =>{
                 messageSignature = kafkaService.extractId(message);
                 if(messageSignature.error !== undefined) {console.log(messageSignature.error)}
 
-                if(message.topic === topic && signature === messageSignature) {
+                if(signedRequests.has(signature)) {
                     callback(message);
                 }
                 else {
-                    console.log('message arrived, it has another topic, it has no signature, no callback executed')
+                    console.log('message arrived, it has unknown signature, no callback executed')
                 }
             }
             else {
