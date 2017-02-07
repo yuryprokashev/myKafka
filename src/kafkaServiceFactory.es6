@@ -12,12 +12,12 @@ module.exports = (kafkaBus) =>{
     kafkaService.send = (topic, signature, message) => {
         console.log(typeof signature);
 
-        if(typeof signature === 'function') {
+        if(typeof signature !== 'string') {
             message = signature;
             signature = undefined;
         }
 
-        if(signature !== undefined) {
+        else if(typeof signature === 'string') {
             message.id = signature;
             signedRequests.set(signature, message);
         }
