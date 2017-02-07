@@ -49,13 +49,13 @@ module.exports = (kafkaBus) =>{
 
         // console.log(typeof signature);
 
-        if(typeof signature === 'function') {
-            callback = signature;
-            signature = undefined;
-        }
-        else if(typeof signature === 'string') {
-            signedCallbacks.set(signature, callback);
-        }
+        // if(typeof signature === 'function') {
+        //     callback = signature;
+        //     signature = undefined;
+        // }
+        // else if(typeof signature === 'string') {
+        //     signedCallbacks.set(signature, callback);
+        // }
 
         let onTopicsAdded = (err, added) => {
             if(err){
@@ -66,6 +66,14 @@ module.exports = (kafkaBus) =>{
         };
 
         let onConsumerMessage = message => {
+
+            if(typeof signature === 'function') {
+                callback = signature;
+                signature = undefined;
+            }
+            else if(typeof signature === 'string') {
+                signedCallbacks.set(signature, callback);
+            }
 
             if(signature === undefined) {
                 if(message.topic === topic) {

@@ -47,12 +47,13 @@ module.exports = function (kafkaBus) {
 
         // console.log(typeof signature);
 
-        if (typeof signature === 'function') {
-            callback = signature;
-            signature = undefined;
-        } else if (typeof signature === 'string') {
-            signedCallbacks.set(signature, callback);
-        }
+        // if(typeof signature === 'function') {
+        //     callback = signature;
+        //     signature = undefined;
+        // }
+        // else if(typeof signature === 'string') {
+        //     signedCallbacks.set(signature, callback);
+        // }
 
         var onTopicsAdded = function onTopicsAdded(err, added) {
             if (err) {
@@ -63,6 +64,13 @@ module.exports = function (kafkaBus) {
         };
 
         var onConsumerMessage = function onConsumerMessage(message) {
+
+            if (typeof signature === 'function') {
+                callback = signature;
+                signature = undefined;
+            } else if (typeof signature === 'string') {
+                signedCallbacks.set(signature, callback);
+            }
 
             if (signature === undefined) {
                 if (message.topic === topic) {
