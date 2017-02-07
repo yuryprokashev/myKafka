@@ -8,6 +8,7 @@ module.exports = function (kafkaBus) {
 
     var kafkaService = {};
     var signedRequests = new Map();
+    var signedCallbacks = new Map();
 
     kafkaService.send = function (topic, signature, message) {
 
@@ -49,6 +50,8 @@ module.exports = function (kafkaBus) {
         if (typeof signature === 'function') {
             callback = signature;
             signature = undefined;
+        } else if (typeof signature === 'string') {
+            signedCallbacks.set(signature, callback);
         }
 
         var onTopicsAdded = function onTopicsAdded(err, added) {
@@ -76,7 +79,7 @@ module.exports = function (kafkaBus) {
 
                 if (signedRequests.has(messageSignature) && message.topic === topic) {
                     console.log('arrived signature exists in cache and = ' + messageSignature);
-                    callback(message);
+                    signedCallbacks.get(messageSignature)(message);
                     signedRequests.delete(messageSignature);
                 } else {
                     console.log('message arrived, it has unknown signature, no callback executed');
