@@ -48,6 +48,8 @@ module.exports = (kafkaBus) =>{
     kafkaService.subscribe = (topic, signature, callback) => {
 
         let args = [...arguments];
+        console.log(arguments);
+        console.log(args);
 
         if(args.length === 2) {
             callback = signature;
