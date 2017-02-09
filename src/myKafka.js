@@ -3,4 +3,4 @@
  */
 'use strict';
 module.exports.kafkaBusFactory = require('./kafkaBusFactory');
-module.exports.kafkaServiceFactory = require('./kafkaServiceFactory');
+module.exports.kafkaServiceFactory = require('./kafkaServiceFactory2');
