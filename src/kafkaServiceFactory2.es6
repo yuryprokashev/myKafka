@@ -14,19 +14,18 @@ module.exports = (kafkaBus, EventEmitter) =>{
             onProducerSent;
 
         onProducerError = (err) => {
-            let logMessage = kafkaService.packLogMessage(this, `producer error\n${err}`);
-            kafkaService.emit('logger.agent.error', logMessage);
+            let error = new Error(`producer error\n${err}`);
+            kafkaService.emit('error', error);
         };
 
         onProducerSent = (err, data) => {
             if(err){
-                let logMessage = kafkaService.packLogMessage(this, `producer sent error\n${err}`);
-                kafkaService.emit('logger.agent.error', logMessage);
+                let error = new Error(`producer sent error\n${err}`);
+                kafkaService.emit('error', error);
 
             }
             if(data){
-                let logMessage = kafkaService.packLogMessage(this, `producer sent success\n${data}`);
-                kafkaService.emit('logger.agent.log', logMessage);
+                kafkaService.emit('log', `producer sent success\n${data}`);
             }
         };
 
@@ -43,8 +42,8 @@ module.exports = (kafkaBus, EventEmitter) =>{
 
         onTopicsAdded = (err, added) => {
             if(err){
-                let logMessage = kafkaService.packLogMessage(this, `consumer failed to add topics\n${err}`);
-                kafkaService.emit('logger.agent.error', logMessage);
+                let error = new Error(`consumer failed to add topics\n${err}`);
+                kafkaService.emit('error', error);
             }
         };
 
@@ -55,8 +54,8 @@ module.exports = (kafkaBus, EventEmitter) =>{
         };
 
         onConsumerError = (err) => {
-            let logMessage = kafkaService.packLogMessage(this, `consumer default error\n${err}`);
-            kafkaService.emit('logger.agent.error', logMessage);
+            let error = new Error(`consumer default error\n${err}`);
+            kafkaService.emit('error', error);
         };
 
         topics = (function(qty){
@@ -81,17 +80,20 @@ module.exports = (kafkaBus, EventEmitter) =>{
             return id;
         }
         else {
-            return kafkaService.packLogMessage(this, 'unable to extract id, kafkaMessage has no context');
+            let error = new Error('unable to extract id, kafkaMessage has no context');
+            kafkaService.emit('error', error);
         }
 
     };
 
     kafkaService.createContext = (signature, query, data) => {
         if(signature === undefined || typeof signature !== 'string'){
-            return kafkaService.packLogMessage(this, `wrong signature passed:\n${signature}`);
+            let error = new Error(`wrong signature passed:\n${signature}`);
+            kafkaService.emit('error', error);
         }
         if(query === undefined || typeof query !== "object") {
-            return kafkaService.packLogMessage(this, `wrong query passed:\n${query}`);
+            let error = new Error(`wrong query passed:\n${query}`);
+            kafkaService.emit('error', error);
         }
         else {
             return {
@@ -111,7 +113,8 @@ module.exports = (kafkaBus, EventEmitter) =>{
         context = JSON.parse(kafkaMessage.value);
 
         if(context === undefined || context === null) {
-            return kafkaService.packLogMessage(this, 'kafkaMessage has no value');
+            let error = new Error('kafkaMessage has no value');
+            kafkaService.emit('error', error);
         }
         else {
             return context;
@@ -127,7 +130,8 @@ module.exports = (kafkaBus, EventEmitter) =>{
             return response;
         }
         else {
-            return kafkaService.packLogMessage(this, 'unable to extract response, kafkaMessage has no context');
+            let error = new Error('unable to extract response, kafkaMessage has no context');
+            kafkaService.emit('error', error);
         }
     };
 
@@ -137,7 +141,8 @@ module.exports = (kafkaBus, EventEmitter) =>{
         query = JSON.parse(kafkaMessage.value).request.query;
 
         if(query === undefined || query === null) {
-            return kafkaService.packLogMessage(this, 'kafkaMessage has no query');
+            let error = new Error('kafkaMessage has no query');
+            kafkaService.emit('error', error);
         }
         else {
             return query;
@@ -150,8 +155,9 @@ module.exports = (kafkaBus, EventEmitter) =>{
         writeData = JSON.parse(kafkaMessage.value).request.writeData;
 
         if(writeData === undefined || writeData === null) {
-            return kafkaService.packLogMessage(this, 'kafkaMessage has no writeData');
-        }
+
+            let error = new Error('kafkaMessage has no writeData');
+            kafkaService.emit('error', error);}
         else {
             return writeData;
         }
@@ -160,6 +166,10 @@ module.exports = (kafkaBus, EventEmitter) =>{
     kafkaService.makeResponseTopic = kafkaMessage => {
         let re = /-request/;
         return kafkaMessage.topic.replace(re, '-response');
+    };
+
+    kafkaService.isMyMessage = (mySignature, kafkaMessage) => {
+        return mySignature === kafkaService.extractId(kafkaMessage);
     };
 
     return kafkaService;

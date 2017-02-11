@@ -16,18 +16,17 @@ module.exports = function (kafkaBus, EventEmitter) {
             onProducerSent = void 0;
 
         onProducerError = function onProducerError(err) {
-            var logMessage = kafkaService.packLogMessage(undefined, 'producer error\n' + err);
-            kafkaService.emit('logger.agent.error', logMessage);
+            var error = new Error('producer error\n' + err);
+            kafkaService.emit('error', error);
         };
 
         onProducerSent = function onProducerSent(err, data) {
             if (err) {
-                var logMessage = kafkaService.packLogMessage(undefined, 'producer sent error\n' + err);
-                kafkaService.emit('logger.agent.error', logMessage);
+                var error = new Error('producer sent error\n' + err);
+                kafkaService.emit('error', error);
             }
             if (data) {
-                var _logMessage = kafkaService.packLogMessage(undefined, 'producer sent success\n' + data);
-                kafkaService.emit('logger.agent.log', _logMessage);
+                kafkaService.emit('log', 'producer sent success\n' + data);
             }
         };
 
@@ -44,8 +43,8 @@ module.exports = function (kafkaBus, EventEmitter) {
 
         onTopicsAdded = function onTopicsAdded(err, added) {
             if (err) {
-                var logMessage = kafkaService.packLogMessage(undefined, 'consumer failed to add topics\n' + err);
-                kafkaService.emit('logger.agent.error', logMessage);
+                var error = new Error('consumer failed to add topics\n' + err);
+                kafkaService.emit('error', error);
             }
         };
 
@@ -56,8 +55,8 @@ module.exports = function (kafkaBus, EventEmitter) {
         };
 
         onConsumerError = function onConsumerError(err) {
-            var logMessage = kafkaService.packLogMessage(undefined, 'consumer default error\n' + err);
-            kafkaService.emit('logger.agent.error', logMessage);
+            var error = new Error('consumer default error\n' + err);
+            kafkaService.emit('error', error);
         };
 
         topics = function (qty) {
@@ -82,16 +81,19 @@ module.exports = function (kafkaBus, EventEmitter) {
             id = context.id;
             return id;
         } else {
-            return kafkaService.packLogMessage(undefined, 'unable to extract id, kafkaMessage has no context');
+            var error = new Error('unable to extract id, kafkaMessage has no context');
+            kafkaService.emit('error', error);
         }
     };
 
     kafkaService.createContext = function (signature, query, data) {
         if (signature === undefined || typeof signature !== 'string') {
-            return kafkaService.packLogMessage(undefined, 'wrong signature passed:\n' + signature);
+            var error = new Error('wrong signature passed:\n' + signature);
+            kafkaService.emit('error', error);
         }
         if (query === undefined || (typeof query === 'undefined' ? 'undefined' : _typeof(query)) !== "object") {
-            return kafkaService.packLogMessage(undefined, 'wrong query passed:\n' + query);
+            var _error = new Error('wrong query passed:\n' + query);
+            kafkaService.emit('error', _error);
         } else {
             return {
                 id: signature,
@@ -110,7 +112,8 @@ module.exports = function (kafkaBus, EventEmitter) {
         context = JSON.parse(kafkaMessage.value);
 
         if (context === undefined || context === null) {
-            return kafkaService.packLogMessage(undefined, 'kafkaMessage has no value');
+            var error = new Error('kafkaMessage has no value');
+            kafkaService.emit('error', error);
         } else {
             return context;
         }
@@ -125,7 +128,8 @@ module.exports = function (kafkaBus, EventEmitter) {
             response = context.response;
             return response;
         } else {
-            return kafkaService.packLogMessage(undefined, 'unable to extract response, kafkaMessage has no context');
+            var error = new Error('unable to extract response, kafkaMessage has no context');
+            kafkaService.emit('error', error);
         }
     };
 
@@ -135,7 +139,8 @@ module.exports = function (kafkaBus, EventEmitter) {
         query = JSON.parse(kafkaMessage.value).request.query;
 
         if (query === undefined || query === null) {
-            return kafkaService.packLogMessage(undefined, 'kafkaMessage has no query');
+            var error = new Error('kafkaMessage has no query');
+            kafkaService.emit('error', error);
         } else {
             return query;
         }
@@ -147,7 +152,9 @@ module.exports = function (kafkaBus, EventEmitter) {
         writeData = JSON.parse(kafkaMessage.value).request.writeData;
 
         if (writeData === undefined || writeData === null) {
-            return kafkaService.packLogMessage(undefined, 'kafkaMessage has no writeData');
+
+            var error = new Error('kafkaMessage has no writeData');
+            kafkaService.emit('error', error);
         } else {
             return writeData;
         }
@@ -156,6 +163,10 @@ module.exports = function (kafkaBus, EventEmitter) {
     kafkaService.makeResponseTopic = function (kafkaMessage) {
         var re = /-request/;
         return kafkaMessage.topic.replace(re, '-response');
+    };
+
+    kafkaService.isMyMessage = function (mySignature, kafkaMessage) {
+        return mySignature === kafkaService.extractId(kafkaMessage);
     };
 
     return kafkaService;
