@@ -83,6 +83,7 @@ module.exports = function (kafkaBus, EventEmitter) {
         } else {
             var error = new Error('unable to extract id, kafkaMessage has no context');
             kafkaService.emit('error', error);
+            return error;
         }
     };
 
@@ -90,10 +91,12 @@ module.exports = function (kafkaBus, EventEmitter) {
         if (signature === undefined || typeof signature !== 'string') {
             var error = new Error('wrong signature passed:\n' + signature);
             kafkaService.emit('error', error);
+            return error;
         }
         if (query === undefined || (typeof query === 'undefined' ? 'undefined' : _typeof(query)) !== "object") {
             var _error = new Error('wrong query passed:\n' + query);
             kafkaService.emit('error', _error);
+            return _error;
         } else {
             return {
                 id: signature,
@@ -114,6 +117,7 @@ module.exports = function (kafkaBus, EventEmitter) {
         if (context === undefined || context === null) {
             var error = new Error('kafkaMessage has no value');
             kafkaService.emit('error', error);
+            return error;
         } else {
             return context;
         }
@@ -130,6 +134,7 @@ module.exports = function (kafkaBus, EventEmitter) {
         } else {
             var error = new Error('unable to extract response, kafkaMessage has no context');
             kafkaService.emit('error', error);
+            return error;
         }
     };
 
@@ -141,6 +146,7 @@ module.exports = function (kafkaBus, EventEmitter) {
         if (query === undefined || query === null) {
             var error = new Error('kafkaMessage has no query');
             kafkaService.emit('error', error);
+            return error;
         } else {
             return query;
         }
@@ -155,6 +161,7 @@ module.exports = function (kafkaBus, EventEmitter) {
 
             var error = new Error('kafkaMessage has no writeData');
             kafkaService.emit('error', error);
+            return error;
         } else {
             return writeData;
         }
