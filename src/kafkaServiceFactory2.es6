@@ -81,7 +81,7 @@ module.exports = (kafkaBus, EventEmitter) =>{
         }
         else {
             let error = new Error('unable to extract id, kafkaMessage has no context');
-            // kafkaService.emit('error', error);
+            kafkaService.emit('error', error);
             return error;
         }
 
@@ -90,12 +90,12 @@ module.exports = (kafkaBus, EventEmitter) =>{
     kafkaService.createContext = (signature, query, data) => {
         if(signature === undefined || typeof signature !== 'string'){
             let error = new Error(`wrong signature passed:\n${signature}`);
-            // kafkaService.emit('error', error);
+            kafkaService.emit('error', error);
             return error;
         }
         if(query === undefined || typeof query !== "object") {
             let error = new Error(`wrong query passed:\n${query}`);
-            // kafkaService.emit('error', error);
+            kafkaService.emit('error', error);
             return error;
         }
         else {
@@ -117,7 +117,7 @@ module.exports = (kafkaBus, EventEmitter) =>{
 
         if(context === undefined || context === null) {
             let error = new Error('kafkaMessage has no value');
-            // kafkaService.emit('error', error);
+            kafkaService.emit('error', error);
             return error;
         }
         else {
@@ -135,7 +135,7 @@ module.exports = (kafkaBus, EventEmitter) =>{
         }
         else {
             let error = new Error('unable to extract response, kafkaMessage has no context');
-            // kafkaService.emit('error', error);
+            kafkaService.emit('error', error);
             return error;
         }
     };
@@ -147,7 +147,7 @@ module.exports = (kafkaBus, EventEmitter) =>{
 
         if(query === undefined || query === null) {
             let error = new Error('kafkaMessage has no query');
-            // kafkaService.emit('error', error);
+            kafkaService.emit('error', error);
             return error;
         }
         else {
@@ -163,7 +163,7 @@ module.exports = (kafkaBus, EventEmitter) =>{
         if(writeData === undefined || writeData === null) {
 
             let error = new Error('kafkaMessage has no writeData');
-            // kafkaService.emit('error', error);
+            kafkaService.emit('error', error);
             return error;
         }
         else {
@@ -179,7 +179,7 @@ module.exports = (kafkaBus, EventEmitter) =>{
     kafkaService.isMyMessage = (mySignature, kafkaMessage) => {
         let messageSignature = kafkaService.extractId(kafkaMessage);
         if(messageSignature instanceof Error) {
-            // kafkaService.emit('error', messageSignature);
+            kafkaService.emit('error', messageSignature);
             return messageSignature;
         }
         else {
