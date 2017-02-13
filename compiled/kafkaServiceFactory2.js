@@ -16,17 +16,17 @@ module.exports = function (kafkaBus, EventEmitter) {
             onProducerSent = void 0;
 
         onProducerError = function onProducerError(err) {
-            var error = new Error('producer error\n' + err);
+            var error = new Error('producer error\n' + JSON.stringify(err));
             kafkaService.emit('error', error);
         };
 
         onProducerSent = function onProducerSent(err, data) {
             if (err) {
-                var error = new Error('producer sent error\n' + err);
+                var error = new Error('producer sent error\n' + JSON.stringify(err));
                 kafkaService.emit('error', error);
             }
             if (data) {
-                kafkaService.emit('log', 'producer sent success\n' + data);
+                kafkaService.emit('log', 'producer sent success\n' + JSON.stringify(data));
             }
         };
 

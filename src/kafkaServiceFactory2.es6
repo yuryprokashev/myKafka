@@ -14,18 +14,18 @@ module.exports = (kafkaBus, EventEmitter) =>{
             onProducerSent;
 
         onProducerError = (err) => {
-            let error = new Error(`producer error\n${err}`);
+            let error = new Error(`producer error\n${JSON.stringify(err)}`);
             kafkaService.emit('error', error);
         };
 
         onProducerSent = (err, data) => {
             if(err){
-                let error = new Error(`producer sent error\n${err}`);
+                let error = new Error(`producer sent error\n${JSON.stringify(err)}`);
                 kafkaService.emit('error', error);
 
             }
             if(data){
-                kafkaService.emit('log', `producer sent success\n${data}`);
+                kafkaService.emit('log', `producer sent success\n${JSON.stringify(data)}`);
             }
         };
 
